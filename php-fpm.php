@@ -1,5 +1,4 @@
 #!/usr/bin/php
-
 <?php
 
 /**
@@ -7,6 +6,8 @@
 * @author MorbZ
 * @licence CC
 */
+
+ob_start();
 
 exec("ps -eo %cpu,etime,rss,command | grep php-fpm", $result);
 
@@ -144,27 +145,36 @@ switch ($fileCalled) {
 }
 
 //output
+$output = "";
+
 ksort($config['elements']);
 if ($isConfig) {
 	//graph params
-	echo "graph_category PHP-FPM\n";
+	$output .= "graph_category PHP-FPM\n";
 	foreach($config['params'] as $key=>$value) {
-		echo $key . ' ' . $value . "\n";
+		$output .= $key . ' ' . $value . "\n";
 	}
 	
 	//element params
 	foreach($config['elements'] as $element=>$data) {
 		foreach ($data as $key=>$value) {
 			if ($key == 'value') continue;
-			echo $element . '.' . $key . ' ' . $value . "\n";
+			$output .= $element . '.' . $key . ' ' . $value . "\n";
 		}
 	}
 } else {
 	//element values
 	foreach ($config['elements'] as $pool=>$element) {
-		echo $pool . '.value ' . $element['value'] . "\n";
+		$output .= $pool . '.value ' . $element['value'] . "\n";
 	}
 }
+
+echo $output;
+
+$final_output = ob_get_contents();
+ob_end_clean();
+
+echo preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/", "", $final_output);
 
 //functions
 function timeToSeconds ($time) {
